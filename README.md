@@ -1,11 +1,11 @@
 # Koombea.Api.Tests
 
 Tools used in this project:
-install JDK (java 8)
-Install IntelliJ Idea community edition
-the project use Maven and TestNG
+JDK 1.8 (java 8)
+IntelliJ Idea community edition
+Maven and TestNG
 Create a project from archetype: org.apache.maven.archetypes:maven-archetype-quickstart
-install the following dependencies:
+with the following dependencies:
 - testng
 - rest-assured
 - json-path
