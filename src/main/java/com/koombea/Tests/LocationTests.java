@@ -5,9 +5,12 @@ import com.koombea.ApiResponseObjects.Common.ErrorResponse;
 import com.koombea.ApiResponseObjects.LocationApi.AllLocations;
 import com.koombea.ApiResponseObjects.LocationApi.Location;
 import com.koombea.DataProviders.LocationDataProvider;
+import com.koombea.Utils.Utils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.util.*;
 
 public class LocationTests {
 
@@ -64,7 +67,7 @@ public class LocationTests {
     @Test(dataProvider="GetLocationValidations200", dataProviderClass = LocationDataProvider.class)
     public void GetLocationValidations200(String id, String name) {
         LocationApiClient locationApiClient = new LocationApiClient();
-        locationApiClient.CallApi(null, id);
+        locationApiClient.CallApi("", id);
         //Validate status code
         Assert.assertEquals(locationApiClient.GetStatusCode(), 200, "Verify status code");
         //Validate Response headers
@@ -83,7 +86,7 @@ public class LocationTests {
     @Test(dataProvider="GetLocationNegativeValidations", dataProviderClass = LocationDataProvider.class)
     public void GetLocationNegativeValidations(String id, int statusCode, String errorMessage) {
         LocationApiClient locationApiClient = new LocationApiClient();
-        locationApiClient.CallApi(null, id);
+        locationApiClient.CallApi("", id);
         //Validate status code
         Assert.assertEquals(locationApiClient.GetStatusCode(), statusCode, "Verify status code");
         //Validate Response headers
@@ -91,5 +94,54 @@ public class LocationTests {
         //Validate Response payload
         ErrorResponse errorResponse = locationApiClient.GetErrorResponse();
         Assert.assertEquals(errorResponse.getError(), errorMessage, "Verify error message");
+    }
+
+
+
+    @Test
+    public void GetMultipleLocations(){
+        LocationApiClient locationApi = new LocationApiClient();
+        int bound = 108;
+        int size = Utils.NextInt(bound);
+        int[] items = Utils.GetArrayWithRandomNumbersNoRepeat(size, bound, false, true);
+        locationApi.CallApi("", Arrays.toString(items));
+        //Validate status code
+        Assert.assertEquals(locationApi.GetStatusCode(), 200, "Verify status code");
+        //Validate Response headers
+        Assert.assertTrue(locationApi.GetResponseHeader("Content-Type").contains("application/json"), "Response should be a json");
+        //Validate Response payload
+        List<Location> locations = locationApi.GetMultipleLocations();
+        Assert.assertEquals(locations.size(), items.length, "Verify the quantity of characters.");
+        for (Location location : locations) {
+            Assert.assertTrue(Utils.ArrayContainsNumber(items, location.getId()), "Verify id [" + location.getId() + "] is contained in the filters " + Arrays.toString(items));
+        }
+    }
+
+    @Test(dataProvider="GetLocationsWithFilters", dataProviderClass = LocationDataProvider.class)
+    public void GetLocationWithFilters(Map<String,String> filters){
+        LocationApiClient locationApi = new LocationApiClient();
+        locationApi.CallApi(filters, null);
+        //Validate status code
+        Assert.assertEquals(locationApi.GetStatusCode(), 200, "Verify status code");
+        //Validate Response headers
+        Assert.assertTrue(locationApi.GetResponseHeader("Content-Type").contains("application/json"), "Response should be a json");
+        //Validate Response payload
+        List<Location> locations = locationApi.GetAllLocations().getResults();
+        Set keys = filters.keySet();
+        Iterator iKeys = keys.iterator();
+        while (iKeys.hasNext()) {
+            String key = iKeys.next().toString();
+            String filter = filters.get(key).toLowerCase(Locale.ROOT);
+            for (Location location : locations) {
+                String locationValue = "";
+                if(key.equals("name"))
+                    locationValue = location.getName();
+                if(key.equals("type"))
+                    locationValue = location.getType();
+                if(key.equals("dimension"))
+                    locationValue = location.getDimension();
+                Assert.assertTrue(locationValue.toLowerCase(Locale.ROOT).contains(filter), "Verify Location [" + locationValue + "] contains the filter [" + filter + "].");
+            }
+        }
     }
 }

@@ -2,6 +2,8 @@ package com.koombea.DataProviders;
 
 import org.testng.annotations.DataProvider;
 
+import java.util.HashMap;
+
 public class EpisodeDataProvider {
 
     @DataProvider(name="GetAllEpisodesValidations200")
@@ -43,6 +45,23 @@ public class EpisodeDataProvider {
                 {"42", 404, "Episode not found"},
                 {"*", 500, "Hey! you must provide an id"},
                 {"2A", 500, "Cast to Number failed for value \"2A\" at path \"id\" for model \"Episode\""},
+        };
+    }
+
+    @DataProvider(name="GetEpisodesWithFilters")
+    public static Object[][] GetEpisodesWithFilters() {
+        return new Object[][]{
+                {new HashMap<String, String>() {{
+                    put("name", "Morty");
+                }}},
+                {new HashMap<String, String>() {{
+                    put("episode", "S01");
+                }}},
+                {new HashMap<String, String>() {{
+                    put("name", "Morty");
+                    put("episode", "S04");
+                }}
+                }
         };
     }
 }
