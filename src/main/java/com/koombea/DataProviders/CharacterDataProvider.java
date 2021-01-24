@@ -2,6 +2,8 @@ package com.koombea.DataProviders;
 
 import org.testng.annotations.DataProvider;
 
+import java.util.HashMap;
+
 public class CharacterDataProvider {
 
     @DataProvider(name="GetAllCharactersValidations200")
@@ -11,9 +13,9 @@ public class CharacterDataProvider {
                 {"-1"},
                 {"0"},
                 {"1"},
-                {"34"},
-                {"*"},
-                {"3.5"},
+                {"34" },
+                {"*" },
+                {"3.5" },
                 {"20.8"}
         };
     }
@@ -44,6 +46,23 @@ public class CharacterDataProvider {
                 {"672", 404, "Character not found"},
                 {"*", 500, "Hey! you must provide an id"},
                 {"1M", 500, "Cast to Number failed for value \"1M\" at path \"id\" for model \"Character\""},
+        };
+    }
+
+    @DataProvider(name="GetCharactersWithFilters")
+    public static Object[][] GetCharactersWithFilters(){
+        return new Object[][]{
+                {new HashMap<String, String>(){{put("name","Rick");}} },
+                {new HashMap<String, String>(){{put("status","Alive");}} },
+                {new HashMap<String, String>(){{put("species","Human");}} },
+                {new HashMap<String, String>(){{put("gender","Female");}} },
+                {new HashMap<String, String>(){{
+                    put("name","Morty");
+                    put("status","Dead");
+                    put("species","Human");
+                    put("gender","Male");
+                }}
+                }
         };
     }
 }

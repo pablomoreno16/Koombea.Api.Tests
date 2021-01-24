@@ -2,6 +2,8 @@ package com.koombea.DataProviders;
 
 import org.testng.annotations.DataProvider;
 
+import java.util.HashMap;
+
 public class LocationDataProvider {
 
     @DataProvider(name="GetAllLocationsValidations200")
@@ -43,6 +45,26 @@ public class LocationDataProvider {
                 {"109", 404, "Location not found"},
                 {"*", 500, "Hey! you must provide an id"},
                 {"1A", 500, "Cast to Number failed for value \"1A\" at path \"id\" for model \"Location\""},
+        };
+    }
+
+    @DataProvider(name="GetLocationsWithFilters")
+    public static Object[][] GetLocationsWithFilters() {
+        return new Object[][]{
+                {new HashMap<String, String>() {{
+                    put("name", "Unity");
+                }}},
+                {new HashMap<String, String>() {{
+                    put("type", "Planet");
+                }}},
+                {new HashMap<String, String>() {{
+                    put("dimension", "Replacement");
+                }}},
+                {new HashMap<String, String>() {{
+                    put("name", "Purge");
+                    put("type", "Planet");
+                    put("dimension", "Replacement");
+                }}}
         };
     }
 }

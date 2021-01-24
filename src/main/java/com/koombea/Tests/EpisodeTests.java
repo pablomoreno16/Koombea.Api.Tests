@@ -1,22 +1,21 @@
 package com.koombea.Tests;
 
 import com.koombea.ApiClients.EpisodeApiClient;
-import com.koombea.ApiClients.LocationApiClient;
 import com.koombea.ApiResponseObjects.Common.ErrorResponse;
 import com.koombea.ApiResponseObjects.EpisodeApi.AllEpisodes;
 import com.koombea.ApiResponseObjects.EpisodeApi.Episode;
-import com.koombea.ApiResponseObjects.LocationApi.AllLocations;
-import com.koombea.ApiResponseObjects.LocationApi.Location;
 import com.koombea.DataProviders.EpisodeDataProvider;
-import com.koombea.DataProviders.LocationDataProvider;
+import com.koombea.Utils.Utils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.*;
+
 public class EpisodeTests {
 
     @Test(dataProvider="GetAllEpisodesValidations200", dataProviderClass = EpisodeDataProvider.class)
-    public void GetAllCharactersValidations200(String page) {
+    public void GetAllEpisodesValidations200(String page) {
         EpisodeApiClient episodeApiClient = new EpisodeApiClient();
         episodeApiClient.CallApi(page, null);
         //Validate status code
@@ -49,7 +48,7 @@ public class EpisodeTests {
         Assert.assertTrue(allEpisodes.getResults().size() > 0, "Verify results value");
 
         int idExpected = (int)((pageUsedForValidation-1)*20)+1;
-        Assert.assertEquals(allEpisodes.getResults().get(0).getId(), idExpected, "Verify first character id");
+        Assert.assertEquals(allEpisodes.getResults().get(0).getId(), idExpected, "Verify first Episode id");
     }
 
     @Test(dataProvider="GetAllEpisodesNegativeValidations", dataProviderClass = EpisodeDataProvider.class)
@@ -68,7 +67,7 @@ public class EpisodeTests {
     @Test(dataProvider="GetEpisodeValidations200", dataProviderClass = EpisodeDataProvider.class)
     public void GetEpisodeValidations200(String id, String name) {
         EpisodeApiClient episodeApiClient = new EpisodeApiClient();
-        episodeApiClient.CallApi(null, id);
+        episodeApiClient.CallApi("", id);
         //Validate status code
         Assert.assertEquals(episodeApiClient.GetStatusCode(), 200, "Verify status code");
         //Validate Response headers
@@ -87,7 +86,7 @@ public class EpisodeTests {
     @Test(dataProvider="GetEpisodeNegativeValidations", dataProviderClass = EpisodeDataProvider.class)
     public void GetLocationNegativeValidations(String id, int statusCode, String errorMessage) {
         EpisodeApiClient episodeApiClient = new EpisodeApiClient();
-        episodeApiClient.CallApi(null, id);
+        episodeApiClient.CallApi("", id);
         //Validate status code
         Assert.assertEquals(episodeApiClient.GetStatusCode(), statusCode, "Verify status code");
         //Validate Response headers
@@ -95,5 +94,51 @@ public class EpisodeTests {
         //Validate Response payload
         ErrorResponse errorResponse = episodeApiClient.GetErrorResponse();
         Assert.assertEquals(errorResponse.getError(), errorMessage, "Verify error message");
+    }
+
+    @Test
+    public void GetMultipleEpisodes(){
+        EpisodeApiClient episodeApiClient = new EpisodeApiClient();
+        int bound = 41;
+        int size = Utils.NextInt(bound);
+        int[] items = Utils.GetArrayWithRandomNumbersNoRepeat(size, bound, false, true);
+        System.out.println(Arrays.toString(items));
+        episodeApiClient.CallApi("", Arrays.toString(items));
+        //Validate status code
+        Assert.assertEquals(episodeApiClient.GetStatusCode(), 200, "Verify status code");
+        //Validate Response headers
+        Assert.assertTrue(episodeApiClient.GetResponseHeader("Content-Type").contains("application/json"), "Response should be a json");
+        //Validate Response payload
+        List<Episode> episodes = episodeApiClient.GetMultipleEpisodes();
+        Assert.assertEquals(episodes.size(), items.length, "Verify the quantity of Episodes.");
+        for (Episode episode : episodes) {
+            Assert.assertTrue(Utils.ArrayContainsNumber(items, episode.getId()), "Verify id [" + episode.getId() + "] is contained in the filters " + Arrays.toString(items));
+        }
+    }
+
+    @Test(dataProvider="GetEpisodesWithFilters", dataProviderClass = EpisodeDataProvider.class)
+    public void GetEpisodesWithFilters(Map<String,String> filters){
+        EpisodeApiClient episodeApiClient = new EpisodeApiClient();
+        episodeApiClient.CallApi(filters, null);
+        //Validate status code
+        Assert.assertEquals(episodeApiClient.GetStatusCode(), 200, "Verify status code");
+        //Validate Response headers
+        Assert.assertTrue(episodeApiClient.GetResponseHeader("Content-Type").contains("application/json"), "Response should be a json");
+        //Validate Response payload
+        List<Episode> episodes = episodeApiClient.GetAllEpisodes().getResults();
+        Set keys = filters.keySet();
+        Iterator iKeys = keys.iterator();
+        while (iKeys.hasNext()) {
+            String key = iKeys.next().toString();
+            String filter = filters.get(key).toLowerCase(Locale.ROOT);
+            for (Episode episode : episodes) {
+                String episodeValue = "";
+                if(key.equals("name"))
+                    episodeValue = episode.getName();
+                if(key.equals("episode"))
+                    episodeValue = episode.getEpisode();
+                Assert.assertTrue(episodeValue.toLowerCase(Locale.ROOT).contains(filter), "Verify Episode [" + episodeValue + "] contains the filter [" + filter + "].");
+            }
+        }
     }
 }
