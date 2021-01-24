@@ -1,15 +1,15 @@
 # Koombea.Api.Tests
 
 Tools used in this project:
-JDK 1.8 (java 8).
-IntelliJ Idea community edition.
-Maven and TestNG.
-Create a project from archetype: org.apache.maven.archetypes:maven-archetype-quickstart.
+* JDK 1.8 (java 8).
+* IntelliJ Idea community edition.
+* Maven and TestNG.
+* Create a project from archetype: org.apache.maven.archetypes:maven-archetype-quickstart.
 with the following dependencies:
-- testng
-- rest-assured
-- json-path
-- jackson-databind
+  - testng
+  - rest-assured
+  - json-path
+  - jackson-databind
 
 External tools:
 - http://www.jsonschema2pojo.org/
